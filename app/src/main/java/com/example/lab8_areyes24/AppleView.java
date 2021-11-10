@@ -162,14 +162,10 @@ public class AppleView extends TileView{
                 }else {
                     float x = event.getX();
                     float y = event.getY();
-                    Coordinate coordinate = new Coordinate((int)Math.floor(x/mTileSize), (int) Math.floor(y/mTileSize));
-                    System.out.println(coordinate.toString());
-                    for(int i = 0; i < mAppleList.size(); i++){
-                        if(mAppleList.get(i).equals(coordinate)){
-                            mScore++;
-                            mStatusText.setText("\tScore = "+mScore);
-                            break;
-                        }
+                    Coordinate spot = new Coordinate((int) (x/mTileSize), (int) (y/mTileSize));
+                    if(hits_apple(spot)){
+                        mScore++;
+                        mStatusText.setText("\tScore = " +mScore);
                     }
                     System.out.println("loc (w,h) (" + WIDTH + "," + HEIGHT + "): " + x + "," + y);
                 }
@@ -181,8 +177,13 @@ public class AppleView extends TileView{
         return true;
     }
 
-
-
+    // function that will determine id there is a hit!
+    private Boolean hits_apple(Coordinate spot) {
+        for (Coordinate c : mAppleList) {
+            if (c.close_enough(spot)) return true;
+        }
+        return false;
+    }
 
     /**
      * Sets the TextView that will be used to give information (such as "Game
@@ -319,6 +320,15 @@ public class AppleView extends TileView{
         @Override
         public String toString() {
             return "Coordinate: [" + x + "," + y + "]";
+        }
+
+        // Function to determine whether a touch is a hit.
+        public boolean close_enough(Coordinate spot) {
+            if( Math.abs(x - spot.x) < 2 && Math.abs(y - spot.y) < 2){
+                return true;
+            }else {
+                return false;
+            }
         }
     }
 }
