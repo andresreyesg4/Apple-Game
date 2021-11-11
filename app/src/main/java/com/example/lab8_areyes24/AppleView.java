@@ -47,8 +47,10 @@ public class AppleView extends TileView{
      * mScore: used to track the number of apples captured mMoveDelay: number of
      * milliseconds between snake movements. This will decrease as apples are
      * captured.
+     * mMisses is used to track the number of misses and determine if the user dies.
      */
     private long mScore = 0;
+    private long mMisses = 0;
     private long mMoveDelay;
     /**
      * mLastMove: tracks the absolute time when the snake last moved, and is used
@@ -120,7 +122,6 @@ public class AppleView extends TileView{
         loadTile(RED_STAR, r.getDrawable(R.drawable.redstar));
 
         loadTile(GREEN_STAR, r.getDrawable(R.drawable.greenstar));
-
     }
 
 
@@ -164,8 +165,19 @@ public class AppleView extends TileView{
                     float y = event.getY();
                     Coordinate spot = new Coordinate((int) (x/mTileSize), (int) (y/mTileSize));
                     if(hits_apple(spot)){
+                        // if there is a hit then we need to update the score.
                         mScore++;
-                        mStatusText.setText("\tScore = " +mScore);
+                        mStatusText.setText("\tScore = " +mScore + "\t Misses = " + mMisses);
+                        if(mMoveDelay >= 300){
+                            mMoveDelay -= 100;
+                        }
+                    }else{
+                        // if a miss we need to update the miss value and check if user lost
+                        mMisses++;
+                        mStatusText.setText("\tScore = " + mScore + "\tMisses = " + mMisses);
+                        if(mMisses == 10){
+                            setMode(LOSE);
+                        }
                     }
                     System.out.println("loc (w,h) (" + WIDTH + "," + HEIGHT + "): " + x + "," + y);
                 }
@@ -173,7 +185,6 @@ public class AppleView extends TileView{
             }
         }
         invalidate();
-
         return true;
     }
 
@@ -204,9 +215,9 @@ public class AppleView extends TileView{
     public void setMode(int newMode) {
         int oldMode = mMode;
         mMode = newMode;
-
+        // add the misses for the player to have
         if (newMode == RUNNING & oldMode != RUNNING) {
-            mStatusText.setText("\tScore = "+mScore);
+            mStatusText.setText("\tScore = "+mScore + "\tMisses = " +mMisses);
             update();
             return;
         }
@@ -222,6 +233,9 @@ public class AppleView extends TileView{
         if (newMode == LOSE) {
             str = res.getString(R.string.mode_lose_prefix) + mScore
                     + res.getString(R.string.mode_lose_suffix);
+            // reset the score and the misses.
+            mScore = 0;
+            mMisses = 0;
         }
 
         mStatusText.setText(str);
